@@ -26,25 +26,46 @@ const axios = require('axios');
 
     const loginSuccess = currentURL.includes("/allianceerp/");
 
-    // Wait for dashboard widgets to appear
+    // Wait for SmartClient grid to fully render
     await page.waitForTimeout(5000);
 
-    console.log("Extracting attendance table...");
+    console.log("Extracting attendance data...");
 
     const attendanceData = await page.evaluate(() => {
-      const table = document.querySelector("table");
-      if (!table) return [];
+      const results = [];
 
-      const rows = Array.from(table.querySelectorAll("tbody tr"));
-      return rows.map(row => {
-        const cells = Array.from(row.querySelectorAll("td"));
-        return {
-          punch_date: cells[0]?.innerText.trim(),
-          punch_in:   cells[1]?.innerText.trim(),
-          punch_out:  cells[2]?.innerText.trim(),
-          attendance: cells[3]?.innerText.trim()
-        };
-      });
+      // SmartClient renders data inside <nobr> tags within <td class="OBGridCell*">
+      // The main data table has id containing "isc_" and class "listTable"
+      const dataTables = Array.from(document.querySelectorAll("table.listTable"));
+
+      for (const table of dataTables) {
+        const rows = Array.from(table.querySelectorAll("tbody tr"));
+
+        for (const row of rows) {
+          const cells = Array.from(row.querySelectorAll("td"));
+          if (cells.length < 3) continue;
+
+          // Text is inside <nobr> inside <div> inside <td>
+          const getText = (td) => {
+            const nobr = td.querySelector("nobr");
+            if (nobr) return nobr.innerText.trim();
+            const div = td.querySelector("div");
+            if (div) return div.innerText.trim();
+            return td.innerText.trim();
+          };
+
+          const punch_date = getText(cells[0]);
+          const punch_in   = getText(cells[1]);
+          const punch_out  = getText(cells[2]);
+          const punch_day  = cells[3] ? getText(cells[3]) : null;
+
+          if (punch_date && punch_date.match(/\d{2}-\d{2}-\d{4}/)) {
+            results.push({ punch_date, punch_in, punch_out, punch_day });
+          }
+        }
+      }
+
+      return results;
     });
 
     const cookies = await page.context().cookies();

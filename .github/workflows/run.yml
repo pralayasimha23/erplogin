@@ -3,12 +3,13 @@ name: ERP Playwright Bot
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "15 5 * * *"    # 10:45 AM IST (05:15 UTC)
+    - cron: "0 13 * * *"    # 06:30 PM IST (13:00 UTC)
+    - cron: "25 13 * * *"   # 06:55 PM IST (13:25 UTC)
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4

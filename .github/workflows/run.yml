@@ -3,13 +3,14 @@ name: ERP Playwright Bot
 on:
   workflow_dispatch:
   schedule:
-    - cron: "15 5 * * *"    # 10:45 AM IST (05:15 UTC)
-    - cron: "0 13 * * *"    # 06:30 PM IST (13:00 UTC)
-    - cron: "25 13 * * *"   # 06:55 PM IST (13:25 UTC)
+    - cron: '15 5 * * *'   # 10:45 AM IST
+    - cron: '0 13 * * *'   # 6:30 PM IST
+    - cron: '25 13 * * *'  # 6:55 PM IST
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -17,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: 20
 
       - name: Install dependencies
         run: npm install
